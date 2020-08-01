@@ -2,6 +2,7 @@
 
 # SHELL
 RM := rm -rf
+AR := ar rcs
 
 # PRETTY PRINTS
 define print_cc
@@ -16,6 +17,11 @@ define print_rm
     $(if $(Q), @echo "[RM]        $(1)")
 endef
 
+define print_ar
+    $(if $(Q), @echo "[AR]        $(1)")
+endef
+
+
 # ARGS (Quiet OR Verbose), type make V=1 to enable verbose mode
 ifeq ("$(origin V)", "command line")
 	Q :=
@@ -28,12 +34,15 @@ SDIR := ./src
 IDIR := ./inc
 ADIR := ./example
 
+SCRIPT_DIR := ./scripts
+
 # FILES
 SRC := $(wildcard $(SDIR)/*.c)
 ASRC := $(SRC) $(wildcard $(ADIR)/*.c)
 
+LOBJ := $(SRC:%.c=%.o)
 AOBJ := $(ASRC:%.c=%.o)
-OBJ := $(AOBJ)
+OBJ := $(AOBJ) $(LOBJ)
 
 DEPS := $(OBJ:%.o=%.d)
 
@@ -42,6 +51,7 @@ LIB :=
 
 # BINS
 AEXEC := example.out
+LIB_NAME := libktest.a
 
 # COMPI, DEFAULT GCC
 CC ?= gcc
@@ -75,9 +85,29 @@ else
 	GGDB :=
 endif
 
+INSTALL_PATH =
+
+# Path for install ktest
+ifeq ("$(origin P)", "command line")
+  INSTALL_PATH = $(P)
+endif
+
 C_FLAGS += $(C_STD) $(C_OPT) $(GGDB) $(C_WARNS) $(DEP_FLAGS)
 
-all: examples
+all: lib examples
+
+lib: $(LIB_NAME)
+
+install: __FORCE
+	$(Q)$(SCRIPT_DIR)/install_ktest.sh $(INSTALL_PATH)
+
+
+__FORCE:
+
+
+$(LIB_NAME): $(LOBJ)
+	$(call print_ar,$@)
+	$(Q)$(AR) $@ $^
 
 examples: $(AEXEC)
 
@@ -92,10 +122,23 @@ $(AEXEC): $(AOBJ)
 clean:
 	$(call print_rm,EXEC)
 	$(Q)$(RM) $(AEXEC)
+	$(Q)$(RM) $(LIB_NAME)
 	$(call print_rm,OBJ)
 	$(Q)$(RM) $(OBJ)
 	$(call print_rm,DEPS)
 	$(Q)$(RM) $(DEPS)
+
+help:
+	@echo "KTest Makefile"
+	@echo -e
+	@echo "Targets:"
+	@echo "    all               - build ktest and examples"
+	@echo "    lib               - build only ktest library"
+	@echo "    examples          - examples"
+	@echo "    install[P = Path] - install ktest to path P or default Path"
+	@echo -e
+	@echo "Makefile supports Verbose mode when V=1"
+	@echo "To check default compiler (gcc) change CC variable (i.e export CC=clang)"
 
 $(DEPS):
 
