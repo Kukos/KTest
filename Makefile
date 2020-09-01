@@ -66,7 +66,6 @@ DEP_FLAGS := -MMD -MP
 H_INC := $(foreach d, $(IDIR), -I$d)
 L_INC := $(foreach l, $(LIB), -l$l)
 
-# PRZETWARZAMY ARGUMENTY DO KOMPILACJI
 ifeq ($(CC),clang)
 	C_WARNS += -Weverything
 else ifneq (, $(filter $(CC), cc gcc))

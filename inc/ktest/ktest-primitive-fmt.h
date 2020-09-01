@@ -11,6 +11,10 @@
     LICENCE: GPL3
 */
 
+#ifndef KTEST_FRAMEWORK_H
+#error "Never include <ktest/ktest-primitive-fmt.h> directly, use <ktest/ktest.h> instead."
+#endif
+
 /**
  * This macro returning printf fmt for variable x
  */

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <ktest/ktest-priv.h>
+#include <ktest/ktest.h>
 
 #define KTEST_COLOR_INFO          COLOR_CYAN
 #define KTEST_COLOR_PASSED        COLOR_GREEN

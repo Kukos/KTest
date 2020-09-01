@@ -11,6 +11,10 @@
     LICENCE: GPL3
 */
 
+#ifndef KTEST_FRAMEWORK_H
+#error "Never include <ktest/ktest-priv.h> directly, use <ktest/ktest.h> instead."
+#endif
+
 #ifndef __GNUC__
 #error "Gnu extension is required to compile tests with KTest!"
 #endif

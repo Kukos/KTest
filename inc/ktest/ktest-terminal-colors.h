@@ -11,6 +11,10 @@
     LICENCE: GPL3
 */
 
+#ifndef KTEST_FRAMEWORK_H
+#error "Never include <ktest/ktest-terminal-colors.h> directly, use <ktest/ktest.h> instead."
+#endif
+
 /* ESCAPE COLORS */
 #define COLOR_RESET           "\033[0m"
 #define COLOR_BLACK           "\033[30m"
