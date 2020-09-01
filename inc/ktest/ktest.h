@@ -142,7 +142,7 @@ typedef void tc_ret_t;
 /**
  * Those macros have the same functionality as T_EXCEPT
  * with 1 different thing.
- * When condition will failed then cpu will stop executing your function
+ * When condition failed then cpu will stop executing your function
  * But wont stop entire test suite
  */
 #define T_ASSERT_EQ(val, val2)  KTEST_ASSERT_EQ(val, val2)
