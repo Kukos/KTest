@@ -114,13 +114,13 @@ void __ktest_test_case_run_prepare(const char* testname);
             const  __typeof__(val)  _ktest_val1 = (val); \
             const  __typeof__(val2) _ktest_val2 = (val2); \
             (void)(&_ktest_val1 - &_ktest_val2); \
-            const char* const fmt_ptr = \
-                __ktest_create_assert_print_fmt(label, \
-                                                KTEST_PRIMTIVE_GET_FMT(_ktest_val1), \
-                                                TOSTRING(op), \
-                                                KTEST_PRIMTIVE_GET_FMT(_ktest_val2)); \
             if (!(_ktest_val1 op _ktest_val2)) \
             { \
+                const char* const fmt_ptr = \
+                    __ktest_create_assert_print_fmt(label, \
+                                                    KTEST_PRIMTIVE_GET_FMT(_ktest_val1), \
+                                                    TOSTRING(op), \
+                                                    KTEST_PRIMTIVE_GET_FMT(_ktest_val2)); \
                 __ktest_print(fmt_ptr, \
                               __FILE__, \
                               __LINE__, \
