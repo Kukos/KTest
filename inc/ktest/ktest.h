@@ -117,12 +117,12 @@ typedef void tc_ret_t;
  * is marked as FAILED, on stderr proper print will be showed
  * and cpu will continue executing your funstion
  */
-#define T_EXPECT_EQ(val, val2)  KTEST_EXPECT_EQ(val, val2)
-#define T_EXPECT_NEQ(val, val2) KTEST_EXPECT_NEQ(val, val2)
-#define T_EXPECT_GT(val, val2)  KTEST_EXPECT_GT(val, val2)
-#define T_EXPECT_GEQ(val, val2) KTEST_EXPECT_GEQ(val, val2)
-#define T_EXPECT_LT(val, val2)  KTEST_EXPECT_LT(val, val2)
-#define T_EXPECT_LEQ(val, val2) KTEST_EXPECT_LEQ(val, val2)
+#define T_EXPECT_EQ(val1, val2)    KTEST_EXPECT_EQ(val1, val2)
+#define T_EXPECT_NEQ(val1, val2)   KTEST_EXPECT_NEQ(val1, val2)
+#define T_EXPECT_GT(val1, val2)    KTEST_EXPECT_GT(val1, val2)
+#define T_EXPECT_GEQ(val1, val2)   KTEST_EXPECT_GEQ(val1, val2)
+#define T_EXPECT_LT(val1, val2)    KTEST_EXPECT_LT(val1, val2)
+#define T_EXPECT_LEQ(val1, val2)   KTEST_EXPECT_LEQ(val1, val2)
 
 /**
  * This macro is similar to T_EXCEPT_
@@ -136,8 +136,17 @@ typedef void tc_ret_t;
  * T_EXPECT(list != NULL && (list->head == NULL || list->size == 0))
  *
  */
-#define T_EXPECT(cond)          KTEST_EXPECT_COND(cond)
+#define T_EXPECT(cond)             KTEST_EXPECT_COND(cond)
 
+/**
+ * Use this macro to check if pointer is not null
+ */
+#define T_EXPECT_PTR_NOT_NULL(ptr) T_EXPECT_NEQ(ptr, (void *)0)
+
+/**
+ * Use this macro to check if pointer is null
+ */
+#define T_EXPECT_PTR_NULL(ptr)     T_EXPECT_EQ(ptr, (void *)0)
 
 /**
  * Those macros have the same functionality as T_EXCEPT
@@ -145,12 +154,14 @@ typedef void tc_ret_t;
  * When condition failed then cpu will stop executing your function
  * But wont stop entire test suite
  */
-#define T_ASSERT_EQ(val, val2)  KTEST_ASSERT_EQ(val, val2)
-#define T_ASSERT_NEQ(val, val2) KTEST_ASSERT_NEQ(val, val2)
-#define T_ASSERT_GT(val, val2)  KTEST_ASSERT_GT(val, val2)
-#define T_ASSERT_GEQ(val, val2) KTEST_ASSERT_GEQ(val, val2)
-#define T_ASSERT_LT(val, val2)  KTEST_ASSERT_LT(val, val2)
-#define T_ASSERT_LEQ(val, val2) KTEST_ASSERT_LEQ(val, val2)
-#define T_ASSERT(cond)          KTEST_ASSERT_COND(cond)
+#define T_ASSERT_EQ(val1, val2)    KTEST_ASSERT_EQ(val1, val2)
+#define T_ASSERT_NEQ(val1, val2)   KTEST_ASSERT_NEQ(val1, val2)
+#define T_ASSERT_GT(val1, val2)    KTEST_ASSERT_GT(val1, val2)
+#define T_ASSERT_GEQ(val1, val2)   KTEST_ASSERT_GEQ(val1, val2)
+#define T_ASSERT_LT(val1, val2)    KTEST_ASSERT_LT(val1, val2)
+#define T_ASSERT_LEQ(val1, val2)   KTEST_ASSERT_LEQ(val, val2)
+#define T_ASSERT(cond)             KTEST_ASSERT_COND(cond)
+#define T_ASSERT_PTR_NOT_NULL(ptr) T_ASSERT_NEQ(ptr, (void *)0)
+#define T_ASSERT_PTR_NULL(ptr)     T_ASSERT_EQ(ptr, (void *)0)
 
 #endif

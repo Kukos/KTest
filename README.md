@@ -18,6 +18,12 @@ $make example
 
 ## Features
 * Good Verbose mode during assertions (both expect and assert) which can print every primitive variables using proper printf format
+* Smart type checking in compile time. Framework is using strict type checking with some exceptions:
+    1. If both types are pointers then pointers are compatible. Because for comparision we can use just void*
+    2. If one of the value is a bool variable then
+        2.1 Second val is a variable, then make type checking
+        2.2 Second val is a const value, then check if can be converted to bool (is equal 0 or 1)
+        2.3 First value is a const value and second value is a const value, they cannot be bool, because of promotion to int
 * Macros family with trivial relations (=, !=, <, <=, >, >=) and also macros for general condition
 * Multi suite mode. You can run as many test suite (with several test cases) as you want in 1 binary file
 * Parametrized test case. You can define every function as test case, so if you want to create parametrized test case, just pass function with arguments to TEST_CASE_RUN() macro
@@ -187,12 +193,12 @@ typedef void tc_ret_t;
  * is marked as FAILED, on stderr proper print will be showed
  * and cpu will continue executing your funstion
  */
-#define T_EXPECT_EQ(val, val2)  KTEST_EXPECT_EQ(val, val2)
-#define T_EXPECT_NEQ(val, val2) KTEST_EXPECT_NEQ(val, val2)
-#define T_EXPECT_GT(val, val2)  KTEST_EXPECT_GT(val, val2)
-#define T_EXPECT_GEQ(val, val2) KTEST_EXPECT_GEQ(val, val2)
-#define T_EXPECT_LT(val, val2)  KTEST_EXPECT_LT(val, val2)
-#define T_EXPECT_LEQ(val, val2) KTEST_EXPECT_LEQ(val, val2)
+#define T_EXPECT_EQ(val1, val2)    KTEST_EXPECT_EQ(val1, val2)
+#define T_EXPECT_NEQ(val1, val2)   KTEST_EXPECT_NEQ(val1, val2)
+#define T_EXPECT_GT(val1, val2)    KTEST_EXPECT_GT(val1, val2)
+#define T_EXPECT_GEQ(val1, val2)   KTEST_EXPECT_GEQ(val1, val2)
+#define T_EXPECT_LT(val1, val2)    KTEST_EXPECT_LT(val1, val2)
+#define T_EXPECT_LEQ(val1, val2)   KTEST_EXPECT_LEQ(val1, val2)
 
 /**
  * This macro is similar to T_EXCEPT_
@@ -206,8 +212,17 @@ typedef void tc_ret_t;
  * T_EXPECT(list != NULL && (list->head == NULL || list->size == 0))
  *
  */
-#define T_EXPECT(cond)          KTEST_EXPECT_COND(cond)
+#define T_EXPECT(cond)             KTEST_EXPECT_COND(cond)
 
+/**
+ * Use this macro to check if pointer is not null
+ */
+#define T_EXPECT_PTR_NOT_NULL(ptr) T_EXPECT_NEQ(ptr, (void *)0)
+
+/**
+ * Use this macro to check if pointer is null
+ */
+#define T_EXPECT_PTR_NULL(ptr)     T_EXPECT_EQ(ptr, (void *)0)
 
 /**
  * Those macros have the same functionality as T_EXCEPT
@@ -215,28 +230,43 @@ typedef void tc_ret_t;
  * When condition failed then cpu will stop executing your function
  * But wont stop entire test suite
  */
-#define T_ASSERT_EQ(val, val2)  KTEST_ASSERT_EQ(val, val2)
-#define T_ASSERT_NEQ(val, val2) KTEST_ASSERT_NEQ(val, val2)
-#define T_ASSERT_GT(val, val2)  KTEST_ASSERT_GT(val, val2)
-#define T_ASSERT_GEQ(val, val2) KTEST_ASSERT_GEQ(val, val2)
-#define T_ASSERT_LT(val, val2)  KTEST_ASSERT_LT(val, val2)
-#define T_ASSERT_LEQ(val, val2) KTEST_ASSERT_LEQ(val, val2)
-#define T_ASSERT(cond)          KTEST_ASSERT_COND(cond)
+#define T_ASSERT_EQ(val1, val2)    KTEST_ASSERT_EQ(val1, val2)
+#define T_ASSERT_NEQ(val1, val2)   KTEST_ASSERT_NEQ(val1, val2)
+#define T_ASSERT_GT(val1, val2)    KTEST_ASSERT_GT(val1, val2)
+#define T_ASSERT_GEQ(val1, val2)   KTEST_ASSERT_GEQ(val1, val2)
+#define T_ASSERT_LT(val1, val2)    KTEST_ASSERT_LT(val1, val2)
+#define T_ASSERT_LEQ(val1, val2)   KTEST_ASSERT_LEQ(val, val2)
+#define T_ASSERT(cond)             KTEST_ASSERT_COND(cond)
+#define T_ASSERT_PTR_NOT_NULL(ptr) T_ASSERT_NEQ(ptr, (void *)0)
+#define T_ASSERT_PTR_NULL(ptr)     T_ASSERT_EQ(ptr, (void *)0)
 ````
 
 ## Example
 ````c
+#include <stdio.h>
 #include <ktest/ktest.h>
 
-static tc_ret_t f(void);
-static tc_ret_t g(int a);
 static double double_add(double a, double b);
+static void tc_start(void);
+static void tc_clean(void);
 
-/* To show that we don't need a temporary variable */
 static double double_add(double a, double b)
 {
     return a + b;
 }
+
+static void tc_start(void)
+{
+    printf("MY init\n");
+}
+
+static void tc_clean(void)
+{
+    printf("MY cleanup\n");
+}
+
+static tc_ret_t f(void);
+static tc_ret_t g(int a);
 
 static tc_ret_t f(void)
 {
@@ -250,6 +280,25 @@ static tc_ret_t f(void)
     T_EXPECT_LT((size_t)1, (size_t)0);
     T_EXPECT(0 == 1);
     T_ASSERT(0 == 1);
+
+    /* Pointers have disabled type checking. Pointer is a pointer :) */
+    int *ptr = (int *)0xdead;
+    T_EXPECT_NEQ(ptr, NULL);
+
+    /* Cannot compare pointer with non-pointer types */
+    /* T_EXPECT_EQ(t, 0xdead); */
+
+    T_EXPECT_PTR_NOT_NULL(ptr);
+    T_EXPECT_PTR_NULL(ptr);
+
+    /*
+        true / false is not a bool :(, that's why type checking is disabling a little bit for booleans
+        When one of the variable is bool then other variable have to be bool
+        When one of the variable is bool then constant value can be 1 (true) or 0 (false)
+     */
+    bool b = false;
+    T_EXPECT_EQ(b, true);
+    /* T_EXPECT_EQ(b, 100); */
 }
 
 static tc_ret_t g(int a)
@@ -266,8 +315,22 @@ int main(void)
     TEST_CASE_RUN(f());
     TEST_CASE_RUN(g(11));
     TEST_SUITE_SUMMARY();
+    /* We need to keep thi valuie before another suite will start, because value will be overwritten */
+    int result = TEST_SUITE_GET_RESULT();
 
-    return TEST_SUITE_GET_RESULT();
+    /* Let set also tc_init and tc_clean */
+    TEST_SUITE_INIT_WITH_FUNC("Second testsuite", tc_start, tc_clean);
+    TEST_CASE_RUN(g(11));
+    TEST_CASE_RUN(g(11));
+    TEST_SUITE_SUMMARY();
+    result += TEST_SUITE_GET_RESULT();
+
+    /* You can also set only one of functions  */
+    TEST_SUITE_INIT_WITH_FUNC("Third testsuite", tc_start, NULL);
+    TEST_CASE_RUN(g(11));
+    TEST_SUITE_SUMMARY();
+
+    return result + TEST_SUITE_GET_RESULT();
 }
 
 ````

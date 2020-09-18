@@ -35,6 +35,24 @@ static tc_ret_t f(void)
     T_EXPECT_LT((size_t)1, (size_t)0);
     T_EXPECT(0 == 1);
     T_ASSERT(0 == 1);
+
+    /* Pointers have disabled type checking. Pointer is a pointer :) */
+    int *ptr = (int *)0xdead;
+
+    /* Cannot compare pointer with non-pointer types */
+    /* T_EXPECT_EQ(t, 0xdead); */
+
+    T_EXPECT_PTR_NOT_NULL(ptr);
+    T_EXPECT_PTR_NULL(ptr);
+
+    /*
+        true / false is not a bool :(, that's why type checking is disabling a little bit for booleans
+        When one of the variable is bool then other variable have to be bool
+        When one of the variable is bool then constant value can be 1 (true) or 0 (false)
+     */
+    bool b = false;
+    T_EXPECT_EQ(b, true);
+    /* T_EXPECT_EQ(b, 100); */
 }
 
 static tc_ret_t g(int a)

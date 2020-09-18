@@ -25,9 +25,12 @@
 #endif
 
 /* all what we and user also need, because we are using something from this libs in macros */
+#include <stddef.h>
+#include <stdbool.h>
+
 #include "ktest-terminal-colors.h"
 #include "ktest-primitive-fmt.h"
-#include <stddef.h>
+#include "ktest-diag.h"
 
 #ifndef TOSTRING
 #define KTEST_TOSTRING(x) #x
@@ -108,12 +111,41 @@ void __ktest_test_case_run_prepare(const char* testname);
         } \
     } while (0)
 
-/* Jesli !(val op val2) to print i tc failed */
-#define KTEST_EXPECT_OR_ASSERT_OP(val, val2, op, label) \
+/*
+    When val1 op val2 is false then mark test case as failed and print values
+
+    Macro is using strict type checking with some exceptions:
+    1. If both types are pointers then pointer are compatible. Because for comparision we can use just void*
+    2. If one of the variable is a bool variable then
+        2.1 Second val is a variable, then make type checking
+        2.2 Second val is a const value, then check if can be converted to bool (is equal 0 or 1)
+        2.3 First value is a const value and second value is a const value, they cannot by bool, because of promotion to int
+
+    Plese note that _Static_assert need all of branches be compile expressions.
+    That's why I use val1 / val2 instead of _ktest_val. But no worries. __typeof__ / sizeof are safe
+    ++i, i++ will be ignored under those compiler "operators"
+ */
+#define KTEST_EXPECT_OR_ASSERT_OP(val1, val2, op, label) \
     do { \
-            const  __typeof__(val)  _ktest_val1 = (val); \
+            KTEST_DIAG_PUSH() \
+            KTEST_DIAG_IGNORE("-Wfloat-equal") \
+            const  __typeof__(val1) _ktest_val1 = (val1); \
             const  __typeof__(val2) _ktest_val2 = (val2); \
-            (void)(&_ktest_val1 - &_ktest_val2); \
+            _Static_assert(__builtin_choose_expr(KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val1) && KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val2), \
+                                                 1, \
+                                                 __builtin_choose_expr(KTEST_PRIMITIVE_GET_TYPE(_ktest_val1) == KTEST_PRIMITIVES_BOOL || KTEST_PRIMITIVE_GET_TYPE(_ktest_val2) == KTEST_PRIMITIVES_BOOL, \
+                                                                       1, \
+                                                                       __builtin_types_compatible_p(__typeof__(val1), __typeof__(val2)))), \
+                           "Uncompatible types"); \
+            _Static_assert(__builtin_choose_expr(KTEST_PRIMITIVE_GET_TYPE(_ktest_val1) == KTEST_PRIMITIVES_BOOL || KTEST_PRIMITIVE_GET_TYPE(_ktest_val2) == KTEST_PRIMITIVES_BOOL, \
+                                                 __builtin_choose_expr(__builtin_constant_p(val1), \
+                                                                       val1 == (__typeof__(val1))false && val1 == (__typeof__(val1))true, \
+                                                                       __builtin_choose_expr(__builtin_constant_p(val2), \
+                                                                                             val2 == (__typeof__(val2))false || val2 == (__typeof__(val2))true, \
+                                                                                             1) \
+                                                                       ), \
+                                                 1), \
+                           "Implicit convertion to bool"); \
             if (!(_ktest_val1 op _ktest_val2)) \
             { \
                 const char* const fmt_ptr = \
@@ -128,9 +160,10 @@ void __ktest_test_case_run_prepare(const char* testname);
                               _ktest_val2); \
                 __ktest_tc_result_set(KTEST_TEST_RESULT_FAILED); \
             } \
+            KTEST_DIAG_POP() \
     } while (0)
 
-/* Zbior predefiniowanych operacji ==, !=, < ... */
+/* Relation set: ==, !=, < ... */
 #define KTEST_EXPECT_EQ(val1, val2)  KTEST_EXPECT_OR_ASSERT_OP(val1, val2, ==, "T_EXPECT")
 #define KTEST_EXPECT_NEQ(val1, val2) KTEST_EXPECT_OR_ASSERT_OP(val1, val2, !=, "T_EXPECT")
 #define KTEST_EXPECT_LT(val1, val2)  KTEST_EXPECT_OR_ASSERT_OP(val1, val2, <, "T_EXPECT")
@@ -148,7 +181,7 @@ void __ktest_test_case_run_prepare(const char* testname);
 #define KTEST_ASSERT_COND(cond)      KTEST_RETURN_IF_ERROR(KTEST_EXPECT_OR_ASSERT_COND(cond, "T_ASSERT"))
 
 
-/* Makro do testowania testcase */
+/* Use this macto to test function */
 #define KTEST_TEST_CASE_RUN(tc) \
     do { \
         __ktest_test_case_run_prepare(TOSTRING(tc)); \
