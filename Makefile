@@ -62,6 +62,7 @@ C_FLAGS :=
 C_WARNS :=
 
 DEP_FLAGS := -MMD -MP
+LINKER_FLAGS := -fPIC
 
 H_INC := $(foreach d, $(IDIR), -I$d)
 L_INC := $(foreach l, $(LIB), -l$l)
@@ -91,7 +92,7 @@ ifeq ("$(origin P)", "command line")
   INSTALL_PATH = $(P)
 endif
 
-C_FLAGS += $(C_STD) $(C_OPT) $(GGDB) $(C_WARNS) $(DEP_FLAGS)
+C_FLAGS += $(C_STD) $(C_OPT) $(GGDB) $(C_WARNS) $(DEP_FLAGS) $(LINKER_FLAGS)
 
 all: lib examples
 
