@@ -129,6 +129,7 @@ void __ktest_test_case_run_prepare(const char* testname);
     do { \
             KTEST_DIAG_PUSH() \
             KTEST_DIAG_IGNORE("-Wfloat-equal") \
+            KTEST_DIAG_IGNORE("-Wint-to-void-pointer-cast") \
             const  __typeof__(val1) _ktest_val1 = (val1); \
             const  __typeof__(val2) _ktest_val2 = (val2); \
             _Static_assert(__builtin_choose_expr(KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val1) && KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val2), \
@@ -146,7 +147,7 @@ void __ktest_test_case_run_prepare(const char* testname);
                                                                        ), \
                                                  1), \
                            "Implicit convertion to bool"); \
-            if (!(_ktest_val1 op _ktest_val2)) \
+            if (!((__builtin_choose_expr(KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val1), (void *)(long)_ktest_val1, _ktest_val1)) op (__builtin_choose_expr(KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val2), (void *)(long)_ktest_val2, _ktest_val2)))) \
             { \
                 const char* const fmt_ptr = \
                     __ktest_create_assert_print_fmt(label, \

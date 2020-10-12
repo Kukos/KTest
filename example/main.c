@@ -45,6 +45,11 @@ static tc_ret_t f(void)
     T_EXPECT_PTR_NOT_NULL(ptr);
     T_EXPECT_PTR_NULL(ptr);
 
+    /* You can also check pointer to function as well */
+    typedef void (*func_f)(int a, int b);
+    func_f func = NULL;
+    T_EXPECT_PTR_NOT_NULL(func);
+
     /*
         true / false is not a bool :(, that's why type checking is disabling a little bit for booleans
         When one of the variable is bool then other variable have to be bool
