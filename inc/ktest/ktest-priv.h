@@ -129,7 +129,7 @@ void __ktest_test_case_run_prepare(const char* testname);
     do { \
             KTEST_DIAG_PUSH() \
             KTEST_DIAG_IGNORE("-Wfloat-equal") \
-            KTEST_DIAG_IGNORE("-Wint-to-void-pointer-cast") \
+            KTEST_DIAG_IGNORE("-Wint-to-pointer-cast") \
             const  __typeof__(val1) _ktest_val1 = (val1); \
             const  __typeof__(val2) _ktest_val2 = (val2); \
             _Static_assert(__builtin_choose_expr(KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val1) && KTEST_PRIMITIVES_PROBABLY_POINTER(_ktest_val2), \
